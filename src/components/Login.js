@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import { Alert } from "./Alert";
+import { ReactComponent as LogoNuevo } from '../assets/logoBarcoNuevo.svg';
 
 export function Login() {
   const [user, setUser] = useState({
@@ -58,17 +59,32 @@ export function Login() {
   };
 
   return (
-    <div className="w-full max-w-xs m-auto">
+    <div className="w-full flex">
+      
       {error && <Alert message={error} />}
 
+
+      <div className="w-3/5 bg-[#40E0D0] p-5 h-screen bg-[url('/assets/backgroundHome.svg')]">
+
+      <div className="flex place-content-center h-full">
+          <LogoNuevo className="w-3/4" />
+      </div>
+      
+
+      </div>
+          
+
+      <div className="bg-black w-2/5 grid h-screen place-items-center">
+      
       <form
         onSubmit={handleSubmit}
-        className="shadow-md rounded px-8 pt-6 pb-8 mb-4"
-      >
-        <div className="mb-4">
+        className="shadow-md rounded pt-6 pb-8 mb-4"
+        >
+        <h1 className="text-center font-helveticaL text-4xl tracking-widest" >BIENVENIDO</h1>
+        <div className="pt-16 mb-8">
           <label
             htmlFor="email"
-            className="block text-teal-400 text-sm font-bold mb-2"
+            className="block text-teal-400 text-sm font-bold mb-2 font-helveticaL"
           >
             Email
           </label>
@@ -77,14 +93,13 @@ export function Login() {
             name="email"
             id="email"
             onChange={handleChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
-            placeholder="youremail@company.tld"
+            className="bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"          
           />
         </div>
         <div className="mb-4">
           <label
             htmlFor="password"
-            className="block teal-400 text-sm font-bold mb-2"
+            className="block teal-400 text-sm font-bold mb-2 font-helveticaL"
           >
             Password
           </label>
@@ -93,26 +108,34 @@ export function Login() {
             name="password"
             id="password"
             onChange={handleChange}
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            placeholder="*************"
+            className="bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           />
         </div>
 
         <div className="flex items-center justify-between">
           <button
-            className="hover:text-gray-500 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            className="hover:text-gray-500 font-bold rounded focus:outline-none focus:shadow-outline font-helveticaL text-xs"
             type="submit"
           >
             Sign In
           </button>
           <a
-            className="inline-block align-baseline font-bold text-sm"
+            className="inline-block align-baseline font-bold text-sm font-helveticaL text-xs"
             href="#!"
             onClick={handleResetPassword}
           >
             Forgot Password?
           </a>
         </div>
+
+      <hr className="bg-grey my-8 h-px bg-[#40E0D0] border-0 dark:bg-[#40E0D0"/>
+
+      <p className="my-4 text-sm flex justify-between">
+        Don't have an account?
+        <Link to="/register" className="text-teal-400 hover:text-gray-500">
+          Register
+        </Link>
+      </p>
       </form>
 {/*       <button
         onClick={handleGoogleSignin}
@@ -120,12 +143,11 @@ export function Login() {
       >
         Google login
       </button> */}
-      <p className="my-4 text-sm flex justify-between px-3">
-        Don't have an account?
-        <Link to="/register" className="text-teal-400 hover:text-gray-500">
-          Register
-        </Link>
-      </p>
+
+
     </div>
+
+        </div>
+    
   );
 }

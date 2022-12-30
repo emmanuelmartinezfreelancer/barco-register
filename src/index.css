@@ -19,4 +19,9 @@
 @font-face {
     font-family: "helvetica-light";
     src: url("/fonts/Helvetica-lt-light.otf");
+  } 
+
+  body {
+
+    background-color: black;
   }

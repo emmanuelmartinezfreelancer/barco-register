@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import imgArt from "../img/M1.jpg"
+import { useAuth } from "../context/authContext"
 
-const Modal = ({ artwork }) => {
+const Modal = ({ artwork, artistName }) => {
   const [showModal, setShowModal] = useState(false);
 
+  const { user} = useAuth();
 
   console.log("Artwork Title", artwork.title)
   return (
@@ -20,7 +22,7 @@ const Modal = ({ artwork }) => {
         <>
           <div className="flex justify-center items-center overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
             <div className="relative w-auto my-6 mx-auto max-w-3xl">
-              <div className="border-2 border-black rounded-lg shadow-lg relative flex flex-col w-full bg-barco outline-none focus:outline-none">
+              <div className="border-2 border-black rounded-lg shadow-lg relative flex flex-col w-full bg-black outline-none focus:outline-none">
                 <div className="flex flex-col items-start justify-between p-5 border-b border-solid border-black rounded-t ">
 {/*                 <button
                     className="bg-transparent text-black float-right"
@@ -31,11 +33,11 @@ const Modal = ({ artwork }) => {
                     </p>
                   </button> */}
                   <h3 className="text-3xl font=semibold">{ artwork.title }</h3>
-                  <h2 className="text-xl">ARTIST NAME</h2>
+                  <h2 className="text-xl">{ user.email }</h2>
 
                 </div>
                 <div className="relative w-full p-6 flex-auto">
-                <img  src={imgArt} alt="imgArt" />
+                {/* <img  src={imgArt} alt="imgArt" /> */}
                 <h3 className="mt-6">DESCRIPTION</h3>
                 <p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. Many desktop publishing packages and web page editors now use.</p>
                 <h3 className="mt-6">TYPE</h3>
@@ -43,19 +45,19 @@ const Modal = ({ artwork }) => {
                 </div>
                 <div className="flex items-center justify-end p-6 border-t border-solid border-black rounded-b">
                   <button
-                    className="text-black hover:text-gray-400 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1"
+                    className="text-teal-400 hover:text-gray-400 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1"
                     type="button"
                     onClick={() => setShowModal(false)}
                   >
                     Close
                   </button>
-                  <button
-                    className="border-2 border-black  text-black hover:text-white hover:bg-black font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1"
+{/*                   <button
+                    className="border-2 border-black  text-teal-400 hover:text-white hover:bg-black font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-1 mb-1"
                     type="button"
                     onClick={() => setShowModal(false)}
                   >
                     Save changes
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </div>

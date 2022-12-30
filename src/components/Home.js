@@ -1,6 +1,6 @@
 import {React, useState, useEffect} from "react";
 import { useAuth } from "../context/authContext"
-import { ReactComponent as Logo } from '../assets/logoBarco.svg';
+import { ReactComponent as Logo } from '../assets/logoBarcoHome.svg';
 import { Link, useNavigate } from "react-router-dom";
 import Obras from './Obras.js'
 import UploadArtwork from "./UploadArtwork";
@@ -95,10 +95,12 @@ export function Home(){
 
       <div id="side-bar"className="fixed left-0 top-0 w-72 h-full p-8 flex flex-col justify-between">
           <nav>
-          <div className="w-24 mb-5">
+          <div className="mb-5">
               <Logo />
           </div>
-          <h1 className="pb-2 text-teal-400">DASHBOARD ARTISTA</h1>
+
+          <h1 class="text-xl font-bold pb-8">Hola { user.displayName || user.email}</h1>
+          <h1 className="pb-2 text-teal-400">DASHBOARD</h1>
           <hr style={{
             backgroundColor: "black",
             height: 2
@@ -111,7 +113,7 @@ export function Home(){
           <div className="pb-5 pt-5">
             <h1>OBRAS</h1>
             <h1 className="text-teal-400 hover:text-gray-500">Subidas</h1>
-            <UploadArtwork />
+            {/* <UploadArtwork /> */}
           </div>
 
           <hr style={{
@@ -119,11 +121,11 @@ export function Home(){
             height: 2
           }} />
 
-          <div className="mt-5">
+{/*           <div className="mt-5">
           <Link to="/profile">
              <h1 class="text-xl font-bold hover:text-teal-400">PROFILE</h1>
           </Link>
-          </div>
+          </div> */}
 
           </nav>
 
@@ -140,13 +142,13 @@ export function Home(){
         
         {/* Header */}
 
-        <header>
+{/*         <header>
          
           <div className="mt-5">
-             <h1 class="text-xl font-bold underline">Hola { user.displayName || user.email}</h1>
+             <h1 class="text-xl font-bold underline">Hola { arrayObras.artistname || user.email}</h1>
           </div>
 
-        </header>
+        </header> */}
 
         {/* Content */}
 
@@ -160,7 +162,7 @@ export function Home(){
 
               {/* CARDS */}
             { arrayObras ? 
-            <Obras obras={ arrayObras.artworks  }/>
+            <Obras obras={ arrayObras.artworks } artistname={ arrayObras.artistname}/>
             : null         
             }
             

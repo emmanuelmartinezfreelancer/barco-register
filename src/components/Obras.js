@@ -3,7 +3,7 @@ import Modal from './Modal';
 
 const propprueba = "Prop prueba"
 
-export default function Obras({obras}) {
+export default function Obras({obras, artistname}) {
 
 const [isShown, setIsShown] = useState(false);
 
@@ -22,7 +22,7 @@ const [isShown, setIsShown] = useState(false);
                         <div className="h-64 w-64 h-full">
                             <div className="pt-24 h-64 w-64 h-full bg-black opacity-100"> 
                             <p className="text-white text-center">{ obra.title }</p>
-                            <Modal artwork ={{ title: obra.title }} onMouseEnter={() => setIsShown(false)} />
+                            <Modal artwork ={{ title: obra.title }}  artistName= {{ artistname}} onMouseEnter={() => setIsShown(false)} />
                             </div>
                         </div>
                     </div>

@@ -69,7 +69,7 @@ En caso de obras en video. Los participantes deberán subir la obra completa en 
 let URLArtwork;
 let URLCV;
 let URLSemblanza;
-let URLsExposiciones;
+let URLsExposiciones = [];
 let URLProject;
 
 
@@ -120,6 +120,7 @@ export function Register() {
   const [cvReady, setCVReady] = useState(false);
   const [semblanzaReady, setSemblanzaReady] = useState(false);
   const [projectReady, setProjectReady] = useState(false);
+  const [comprobantesReady, setComprobanteReady] = useState(false);
   const [showRegisterButton, setRegisterButton] = useState(false);
 
   const navigate = useNavigate();
@@ -133,9 +134,8 @@ export function Register() {
     let finalUser = {...user, password: "*******", cvUrl: URLCV, semblanzaUrl: URLSemblanza, projectUrl: URLProject};
     let finalArtwork = {...artwork, imgurl: URLArtwork};
 
-    console.log("URLCV Final", URLCV, "URL Semblanza", URLSemblanza, "URL Artwork", URLArtwork);
-
     finalUser.artworks.push(finalArtwork);
+    finalUser.exposicionesUrls = URLsExposiciones;
   
     console.log("Final User", finalUser);
 
@@ -216,10 +216,10 @@ const projectFileHandler = async(e)=>{
 
 }
 
-
-  const handleUploadFiles = files => {
+  const handleUploadFiles = async files => {
     const uploaded = [...receiptsFiles];
     let limitExceeded = false;
+
     files.some((file) => {
         if (uploaded.findIndex((f) => f.name === file.name) === -1) {
             uploaded.push(file);
@@ -233,9 +233,29 @@ const projectFileHandler = async(e)=>{
         }
     })
     if (!limitExceeded) setReceiptsFiles(uploaded)
-  }
+
+    const requests = uploaded.map(async(file)=>{
+
+      const localFile = file;
+
+      const fileRef = ref(storage, `comprobantes/${localFile.name}`)
+    
+      await uploadBytes(fileRef, localFile);
+    
+      let comprobanteURL = await getDownloadURL(fileRef);
+
+      URLsExposiciones.push(comprobanteURL);
+
+    })
+
+      // Wait for all requests, and then setState
+      return Promise.all(requests).then(() => {
+        console.log("Comprobantes listos");
+        setComprobanteReady(true);
+      });
+    }
   
-  
+
   const handleFileEvent =  (e) => {
     
     const chosenFiles = Array.prototype.slice.call(e.target.files)
@@ -247,8 +267,12 @@ const projectFileHandler = async(e)=>{
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    try {
 
+    if(!cvReady || !semblanzaReady || !projectReady || !comprobantesReady){
+
+      setError("Upload of files not complete")
+    }
+    try {
       await signup(user.email, user.password);     
       const docFirebase = await createDocument(user.email);
       console.log("Doc user", docFirebase);
@@ -284,7 +308,7 @@ const projectFileHandler = async(e)=>{
               <div className="mb-4">
               <label
                 htmlFor="artist-name"
-                className="block text-teal-400 text-sm font-bold mb-2"
+                className="block text-teal-400 font-helveticaL text-sm font-bold mb-2"
               >
                 Nombre del Artista
               </label>
@@ -292,7 +316,7 @@ const projectFileHandler = async(e)=>{
                 name = "artist-name"
                 type="text"
                 onChange={(e) => setUser({ ...user, artistname: e.target.value })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="font-helveticaL text-sm shadow appearance-none bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Artist Name"
               />
             </div>
@@ -303,7 +327,7 @@ const projectFileHandler = async(e)=>{
             <Tooltip title={ addressText } placement="right-start">
               <label
                 htmlFor="address"
-                className="flex justify-between block text-teal-400 text-sm font-bold mb-2"
+                className="flex justify-between block text-teal-400 font-helveticaL text-sm font-bold mb-2 "
               >
                 Dirección Completa
                 <AiOutlineQuestionCircle/>
@@ -314,7 +338,7 @@ const projectFileHandler = async(e)=>{
                 name = "address"
                 type="text"
                 onChange={(e) => setUser({ ...user, address: e.target.value })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="font-helveticaL text-sm bg-transparent border border-[#40E0D0] shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Address"
               />
             </div>
@@ -323,16 +347,16 @@ const projectFileHandler = async(e)=>{
             <div className="mb-4">
               <label
                 htmlFor="birth"
-                className="block text-teal-400 text-sm font-bold mb-2"
+                className="font-helveticaL text-sm block text-teal-400 text-sm font-bold mb-2"
               >
-                Fecha y lugar de nacimiento
+                Fecha de nacimiento
               </label>
               <input
                 name = "birth"
                 type="text"
                 onChange={(e) => setUser({ ...user, birth: e.target.value })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
-                placeholder="Birth and Location"
+                className="font-helveticaL text-sm bg-transparent border border-[#40E0D0] shadow appearance-none rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                placeholder="Birth Date"
               />
             </div>
 
@@ -340,7 +364,7 @@ const projectFileHandler = async(e)=>{
             <Tooltip title={ phoneText } placement="right-start">
               <label
                 htmlFor="phone"
-                className="flex justify-between block text-teal-400 text-sm font-bold mb-2"
+                className="flex justify-between block text-teal-400 font-helveticaL text-sm font-bold mb-2"
               >
                 Teléfono
                 <AiOutlineQuestionCircle/>
@@ -350,7 +374,7 @@ const projectFileHandler = async(e)=>{
                 name = "phone"
                 type="text"
                 onChange={(e) => setUser({ ...user, phone: e.target.value })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none font-helveticaL text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Phone"
               />
             </div>
@@ -358,7 +382,7 @@ const projectFileHandler = async(e)=>{
             <div className="mb-4">
               <label
                 htmlFor="web"
-                className="block text-teal-400 text-sm font-bold mb-2"
+                className="block text-teal-400 font-helveticaL text-sm font-bold mb-2"
               >
                 Página web
               </label>
@@ -366,7 +390,7 @@ const projectFileHandler = async(e)=>{
                 name = "web"
                 type="text"
                 onChange={(e) => setUser({ ...user, web: e.target.value })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none font-helveticaL text-sm bg-transparent border border-[#40E0D0]  rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Web page"
               />
             </div>
@@ -374,7 +398,7 @@ const projectFileHandler = async(e)=>{
             <div className="mb-4">
               <label
                 htmlFor="discipline"
-                className="block text-teal-400 text-sm font-bold mb-2"
+                className="block text-teal-400 font-helveticaL text-sm font-bold mb-2"
               >
                 Disciplina
               </label>
@@ -382,7 +406,7 @@ const projectFileHandler = async(e)=>{
                 name = "discipline"
                 type="text"
                 onChange={(e) => setUser({ ...user, discipline: e.target.value })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none font-helveticaL text-sm bg-transparent border border-[#40E0D0]  rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Discipline"
               />
             </div>
@@ -399,7 +423,7 @@ const projectFileHandler = async(e)=>{
               <div className="mb-4">
               <label
                 htmlFor="artwork-name"
-                className="block text-teal-400 text-sm font-bold mb-2"
+                className="block text-teal-400 font-helveticaL text-sm font-bold mb-2"
               >
                 Nombre de la obra
               </label>
@@ -407,7 +431,7 @@ const projectFileHandler = async(e)=>{
                 name = "artwork-name"
                 type="text"
                 onChange={(e) => setArtwork({ ...artwork, title: e.target.value })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none font-helveticaL text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Artwork Name"
               />
             </div>
@@ -418,7 +442,7 @@ const projectFileHandler = async(e)=>{
             
               <label
                 htmlFor="year-realization"
-                className="block text-teal-400 text-sm font-bold mb-2"
+                className="block text-teal-400 font-helveticaL text-sm font-bold mb-2"
               >
                 Año de realización
                 
@@ -429,7 +453,7 @@ const projectFileHandler = async(e)=>{
                 name = "year-realization"
                 type="text"
                 onChange={(e) => setArtwork({ ...artwork, year: e.target.value }, console.log("E value", e.target.value))}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none font-helveticaL text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Year"
               />
             </div>
@@ -439,7 +463,7 @@ const projectFileHandler = async(e)=>{
             <Tooltip title="Para técnicas mixtas, describir los materiales" placement="right-start">
               <label
                 htmlFor="technique"
-                className="flex justify-between block text-teal-400 text-sm font-bold mb-2"
+                className="flex justify-between block text-teal-400 font-helveticaL text-sm font-bold mb-2"
               >
                 Técnica
                 <AiOutlineQuestionCircle/>
@@ -449,7 +473,7 @@ const projectFileHandler = async(e)=>{
                 name = "technique"
                 type="text"
                 onChange={(e) => setArtwork({ ...artwork, technique: e.target.value })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none bfont-helveticaL text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Technique"
               />
             </div>
@@ -458,7 +482,7 @@ const projectFileHandler = async(e)=>{
             
               <label
                 htmlFor="edition"
-                className="flex justify-between block text-teal-400 text-sm font-bold mb-2"
+                className="flex justify-between block text-teal-400 font-helveticaL text-sm font-bold mb-2"
               >
                 Ediciones
                 
@@ -468,7 +492,7 @@ const projectFileHandler = async(e)=>{
                 name = "edition"
                 type="text"
                 onChange={(e) => setArtwork({ ...artwork, edition: e.target.value })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Number of editions"
               />
             </div>
@@ -476,7 +500,7 @@ const projectFileHandler = async(e)=>{
             <div className="mb-4">
               <label
                 htmlFor="widtheight"
-                className="block text-teal-400 text-sm font-bold mb-2"
+                className="block text-teal-400 font-helveticaL text-sm font-bold mb-2"
               >
                 Medidas
               </label>
@@ -484,7 +508,7 @@ const projectFileHandler = async(e)=>{
                 name = "widtheight"
                 type="text"
                 onChange={(e) => setArtwork({ ...artwork, widtheight: e.target.value })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Width x height x depth"
               />
             </div>
@@ -495,7 +519,7 @@ const projectFileHandler = async(e)=>{
               placement="right-start">
               <label
                 htmlFor="duration"
-                className="flex justify-between  block text-teal-400 text-sm font-bold mb-2"
+                className="flex justify-between  block text-teal-400 font-helveticaL text-sm font-bold mb-2"
               >
                 Duración
                 <AiOutlineQuestionCircle/>
@@ -506,7 +530,7 @@ const projectFileHandler = async(e)=>{
                 name = "duration"
                 type="text"
                 onChange={(e) => setArtwork({ ...artwork, duration: e.target.value })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Duration"
               />
             </div>
@@ -515,7 +539,7 @@ const projectFileHandler = async(e)=>{
             
               <label
                 htmlFor="weight"
-                className="block text-teal-400 text-sm font-bold mb-2"
+                className="block text-teal-400 font-helveticaL text-sm font-bold mb-2"
               >
                 Peso
                 
@@ -525,7 +549,7 @@ const projectFileHandler = async(e)=>{
                 name = "weight"
                 type="text"
                 onChange={(e) => setArtwork({ ...artwork, weight: e.target.value })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Weight in Kg"
               />
             </div>
@@ -534,7 +558,7 @@ const projectFileHandler = async(e)=>{
             <div className="mb-4">
               <label
                 htmlFor="value-artwork"
-                className="block text-teal-400 text-sm font-bold mb-2"
+                className="block text-teal-400 font-helveticaL text-sm font-bold mb-2"
               >
                 Avalúo de la pieza
               </label>
@@ -542,7 +566,7 @@ const projectFileHandler = async(e)=>{
                 name = "value-artwork"
                 type="text"
                 onChange={(e) => setArtwork({ ...artwork, value: e.target.value })}
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                 placeholder="Valuation of the artwork"
               />
             </div>
@@ -551,7 +575,7 @@ const projectFileHandler = async(e)=>{
                   <Tooltip title={ imgArtworkText } placement="right-start">
                   <label
                     htmlFor="artwork-image"
-                    className="flex justify-between block text-teal-400 text-sm font-bold mb-2"
+                    className="flex justify-between block text-teal-400 font-helveticaL text-sm font-bold mb-2"
                   >
                     Imagen / Video de la obra
                     <AiOutlineQuestionCircle/>
@@ -563,7 +587,7 @@ const projectFileHandler = async(e)=>{
                     name = "artwork-image"
                     type="file"
                     onChange={ imgFileHandler }
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                    className="shadow appearance-none text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                     accept="image/jpeg"
                   />
               </div>
@@ -583,7 +607,7 @@ const projectFileHandler = async(e)=>{
                   <Tooltip title={ cvText } placement="right-start">
                   <label
                     htmlFor="cv"
-                    className="flex justify-between block text-teal-400 text-sm font-bold mb-2"
+                    className="flex justify-between block text-teal-400 font-helveticaL text-sm font-bold mb-2"
                   >
                     Curriculum
                     <AiOutlineQuestionCircle/>
@@ -595,7 +619,7 @@ const projectFileHandler = async(e)=>{
                     name = "cv"
                     type="file"
                     onChange={cvFileHandler}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                    className="shadow appearance-none text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                     placeholder="Curriculum Vitae"
                     accept=".doc,.docx"
                   />
@@ -605,7 +629,7 @@ const projectFileHandler = async(e)=>{
                   <Tooltip title={ semblanzaText } placement="right-start">
                   <label
                     htmlFor="semblanza"
-                    className="flex justify-between block text-teal-400 text-sm font-bold mb-2"
+                    className="flex justify-between block text-teal-400 font-helveticaL text-sm font-bold mb-2"
                   >
                     Semblanza
                     <AiOutlineQuestionCircle/>
@@ -617,7 +641,7 @@ const projectFileHandler = async(e)=>{
                     name = "semblanza"
                     type="file"
                     onChange={semblanzaFileHandler}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                    className="shadow appearance-none text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                     placeholder="Semblanza"
                     accept=".doc,.docx"
                   />
@@ -631,13 +655,13 @@ const projectFileHandler = async(e)=>{
                 htmlFor='fileUpload'
                 >
                 
-                <a  className={`btn btn-primary ${!fileLimit ? '' : 'disabled' } `}>Comprobantes de exposiciones</a><AiOutlineQuestionCircle/>
+                <a  className={`btn btn-primary font-helveticaL text-sm ${!fileLimit ? '' : 'disabled' } `}>Comprobantes de exposiciones</a><AiOutlineQuestionCircle/>
                 </label>
                 </Tooltip>
                 <input 
                 id='fileUpload' 
                 type='file'
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                className="shadow appearance-none text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 font-helveticaL text-sm leading-tight focus:outline-none focus:shadow-outline"
                 multiple
                 accept='image/jpeg'
                 onChange={handleFileEvent}
@@ -651,7 +675,7 @@ const projectFileHandler = async(e)=>{
                   <Tooltip title={ descriptionProjectText } placement="right-start">
                   <label
                     htmlFor="description-project"
-                    className="flex justify-between block text-teal-400 text-sm font-bold mb-2"
+                    className="flex justify-between block text-teal-400 font-helveticaL text-sm font-bold mb-2"
                   >
                     Descripción del proyecto
                     <AiOutlineQuestionCircle/>
@@ -663,7 +687,7 @@ const projectFileHandler = async(e)=>{
                     name = "description-project"
                     type="file"
                     onChange={projectFileHandler}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                    className="shadow appearance-none text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                     accept="application/pdf"
                   />
                 </div>
@@ -673,14 +697,14 @@ const projectFileHandler = async(e)=>{
               <div className="mb-4">
                   <label
                     htmlFor="email"
-                    className="block text-teal-400 text-sm font-bold mb-2"
+                    className="block text-teal-400 font-helveticaL text-sm font-bold mb-2"
                   >
                     Email
                   </label>
                   <input
                     type="email"
                     onChange={(e) => setUser({ ...user, email: e.target.value })}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                    className="shadow appearance-none text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                     placeholder="youremail@company.tld"
                   />
                 </div>
@@ -688,19 +712,19 @@ const projectFileHandler = async(e)=>{
                 <div className="mb-4">
                   <label
                     htmlFor="password"
-                    className="block text-teal-400 text-sm font-bold mb-2"
+                    className="block text-teal-400 font-helveticaL text-sm font-bold mb-2"
                   >
                     Password
                   </label>
                   <input
                     type="password"
                     onChange={(e) => setUser({ ...user, password: e.target.value })}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
+                    className="shadow appearance-none text-sm bg-transparent border border-[#40E0D0] rounded w-full py-2 px-3 text-teal-400 leading-tight focus:outline-none focus:shadow-outline"
                     placeholder="*************"
                   />
                 </div>
                
-                  <button className="text-teal-400 hover:text-gray-500 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                  <button className="font-helveticaL text-sm text-teal-400 hover:text-gray-500 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Register
                   </button> 
               
@@ -717,7 +741,7 @@ const projectFileHandler = async(e)=>{
 
       { firstWindow && 
 
-      <button onClick={()=>{ setFirstWindow(false); setArtworkWindow(true); console.log("Go to artwork"); console.log("User", user) }} className="bg-zinc-900 hover:bg-neutral-800 text-white font-bold py-2 px-4 rounded">
+      <button onClick={()=>{ setFirstWindow(false); setArtworkWindow(true); console.log("Go to artwork"); console.log("User", user) }} className="bg-zinc-900 hover:bg-neutral-800 text-white font-bold py-2 px-4 rounded font-helveticaL text-sm">
           Add artwork
       </button>
 
@@ -725,15 +749,15 @@ const projectFileHandler = async(e)=>{
 
       { showNextButton && 
 
-      <button onClick={()=>{ setArtworkWindow(false); setRegisterWindow(true); setShowNextButton(false); console.log("Go to finish register"); console.log("User", user); console.log("Artwork", artwork) }} className="bg-zinc-900 hover:bg-neutral-800 text-white font-bold py-2 px-4 rounded">
+      <button onClick={()=>{ setArtworkWindow(false); setRegisterWindow(true); setShowNextButton(false); console.log("Go to finish register"); console.log("User", user); console.log("Artwork", artwork) }} className="bg-zinc-900 hover:bg-neutral-800 text-white font-bold py-2 px-4 rounded font-helveticaL text-sm">
           Next
       </button>
       }
       
       
-      <p className="my-4 text-sm flex justify-between px-3">
+      <p className="my-4 text-sm text-teal-400 flex justify-between px-3">
         Already have an Account?
-        <Link to="/login" className="text-black hover:text-gray-500">
+        <Link to="/login" className="text-teal-400 hover:text-gray-500">
           Login
         </Link>
       </p>
